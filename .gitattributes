@@ -1,0 +1,10 @@
+* text=auto
+
+# 模块脚本必须保持 LF, 否则在 Android 上无法执行
+*.sh text eol=lf
+capctl text eol=lf
+config.sh text eol=lf
+module.prop text eol=lf
+
+*.zip binary
+*.png binary

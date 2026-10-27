@@ -1,0 +1,58 @@
+#!/system/bin/sh
+MODDIR=${0%/*}
+[ -f "$MODDIR/config.sh" ] && . "$MODDIR/config.sh"
+B=/sys/class/power_supply/battery
+O=/sys/class/oplus_chg/battery
+U=/sys/class/oplus_chg/usb
+C=/sys/class/power_supply/mtk-master-charger
+v=
+rd() { v=; read -r v < "$1" 2>/dev/null; }
+st() { rd "$2"; printf "%-22s %s\n" "$1" "$v"; }
+
+pick() {
+  cap=$1; T=""
+  for pair in $CAP_TIERS; do
+    thr=${pair%%:*}; amt=${pair##*:}
+    if [ "$cap" -lt "$thr" ]; then T=$amt; break; fi
+  done
+  [ -z "$T" ] && T=900
+  if [ "${TARGET_BCC_MA:-0}" -gt 0 ]; then T=$TARGET_BCC_MA; fi
+  echo $T
+}
+
+case "$1" in
+  status)
+    rd $B/capacity; cap=$v
+    echo "===== 实时 ====="
+    st "电量"          $B/capacity
+    st "状态"          $B/status
+    st "电流(mA)"      $B/current_now
+    st "电池电压(mV)"  $B/voltage_now
+    st "VBUS(mV)"      $C/voltage_now
+    st "温度(0.1C)"    $B/temp
+    st "快充类型"      $U/fast_chg_type
+    st "VOOC"          $O/voocchg_ing
+    st "bcc_current"   $O/bcc_current
+    echo "===== 模块 ====="
+    echo "TARGET_BCC_MA=$TARGET_BCC_MA (0=自适应)"
+    echo "当前电量应限制为: $(pick ${cap:-0}) mA"
+    echo "温度降档 ${TEMP_DERATE} / 停止 ${TEMP_LIMIT}"
+    echo "守护进程: $(pgrep -f oplus_flash_fix/service.sh | tr "\n" " ")"
+    ;;
+  calc)
+    echo "电量 -> 目标电流(mA)"
+    for c in 5 10 14 20 29 35 44 50 59 65 74 80 89 95 100; do
+      echo "  $c% -> $(pick $c)"
+    done
+    ;;
+  set)
+    k="$2"; val="$3"
+    if grep -q "^$k=" "$MODDIR/config.sh"; then
+      sed -i "s|^$k=.*|$k=$val|" "$MODDIR/config.sh"; echo "$k=$val 已写入"
+    else echo "未知键: $k  (ENABLE/TARGET_BCC_MA/CAP_TIERS/TEMP_DERATE/TEMP_LIMIT/STOP_AT_PERCENT)"; fi
+    ;;
+  off) sed -i "s|^ENABLE=.*|ENABLE=0|" "$MODDIR/config.sh"; echo "已停用" ;;
+  on)  sed -i "s|^ENABLE=.*|ENABLE=1|" "$MODDIR/config.sh"; echo "已启用" ;;
+  log) tail -n 40 "$MODDIR/log.txt" 2>/dev/null || echo "(无日志)" ;;
+  *) echo "用法: capctl status | calc | set <键> <值> | on | off | log" ;;
+esac

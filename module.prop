@@ -1,0 +1,6 @@
+id=oplus_flash_fix
+name=Oplus 快充稳压 (电压闭环)
+version=v2.0
+versionCode=3
+author=dsh
+description=以电池端电压为闭环目标, 实时微调 bcc_current, 让老化电池在整个电量区间都贴着安全电压上限充电, 不再触发过压回落 5V/0.5A。
