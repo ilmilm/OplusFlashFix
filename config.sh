@@ -36,7 +36,7 @@ RECOVER=1
 # 低于该电流(mA)视为已回落到保底档
 RECOVER_CUR=800
 # 电量超过该值不再尝试恢复(高电量本身就跑不动快充)
-RECOVER_MAX_PERCENT=58
+RECOVER_MAX_PERCENT=80
 # 连续满足条件多少次(每次约0.35s)才触发, 3 约等于 1 秒
 RECOVER_CONFIRM=3
 # 插上后多少 tick 内不触发(约30 tick = 10秒), 避免打断正常协商
