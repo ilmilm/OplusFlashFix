@@ -32,6 +32,7 @@ T=${TARGET_BCC_MA:-1500}
 cnt=0
 lastw=""
 lowcnt=0
+failcnt=0
 lastrec=0
 prevac=0
 plugtick=0
@@ -45,11 +46,11 @@ while true; do
 
   rd $AC/online; ac=$v
   if [ "$ac" != "1" ]; then
-    prevac=0; lowcnt=0
+    prevac=0; lowcnt=0; failcnt=0
     [ "$lastw" != "unplug" ] && { log "未接入电源, 待机"; lastw="unplug"; }
     sleep 1; continue
   fi
-  if [ "$prevac" != "1" ]; then plugtick=$cnt; lowcnt=0; prevac=1; fi
+  if [ "$prevac" != "1" ]; then plugtick=$cnt; lowcnt=0; failcnt=0; prevac=1; fi
 
   rd $B/capacity;    cap=$v
   rd $B/temp;        tp=$v
@@ -100,7 +101,7 @@ while true; do
 
   # ===== 回落自动恢复 =====
   # 条件: 已充电超过宽限时间, 当前只走保底档(vooc=0 且电流 < 800mA), 电量未过高
-  if [ "${RECOVER:-1}" = "1" ] && [ "$po" = "0" ] && [ "$cn" -lt "${RECOVER_CUR:-800}" ] && [ "$cap" -lt "${RECOVER_MAX_PERCENT:-80}" ]; then
+  if [ "${RECOVER:-1}" = "1" ] && [ "$po" = "0" ] && [ "$cn" -lt "${RECOVER_CUR:-800}" ] && [ "$cap" -lt "${RECOVER_MAX_PERCENT:-58}" ] && [ "$failcnt" -lt "${RECOVER_MAX_FAIL:-3}" ]; then
     if [ $((cnt - plugtick)) -gt "${RECOVER_GRACE_TICKS:-30}" ]; then
       lowcnt=$((lowcnt+1))
       if [ "$lowcnt" -ge "${RECOVER_CONFIRM:-3}" ] && [ $((cnt - lastrec)) -ge "${RECOVER_COOLDOWN_TICKS:-70}" ]; then
@@ -113,7 +114,16 @@ while true; do
         sleep 3
         rd $O/voocchg_ing; nv=$v
         rd $B/current_now; nc=$v
-        log "重协商结果: vooc=$nv 电流=${nc}mA"
+        if [ "$nv" = "1" ]; then
+          failcnt=0
+          log "重协商成功: vooc=1 电流=${nc}mA"
+        else
+          failcnt=$((failcnt+1))
+          log "重协商未恢复: vooc=$nv 电流=${nc}mA (连续失败 $failcnt/${RECOVER_MAX_FAIL:-3})"
+          if [ "$failcnt" -ge "${RECOVER_MAX_FAIL:-3}" ]; then
+            log "连续失败达上限, 本次插入不再尝试恢复(拔插重置)"
+          fi
+        fi
       fi
     fi
   else

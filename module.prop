@@ -1,6 +1,6 @@
 id=oplus_flash_fix
 name=Oplus 快充稳压 (电压闭环)
-version=v2.2
-versionCode=5
+version=v2.3
+versionCode=6
 author=dsh
 description=钉住 bcc_current 让老化电池走稳定快充档(0.3s 高频写入), 并在回落到 5V/0.5A 时自动用 mmi_charging_enable 强制重协商恢复快充。
