@@ -111,7 +111,9 @@ while true; do
         lastrec=$cnt
         lowcnt=0
         sleep 3
-        rd $O/voocchg_ing; rd $B/current_now; log "重协商结果: vooc=$v cur=$cn"
+        rd $O/voocchg_ing; nv=$v
+        rd $B/current_now; nc=$v
+        log "重协商结果: vooc=$nv 电流=${nc}mA"
       fi
     fi
   else
