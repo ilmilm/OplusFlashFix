@@ -12,6 +12,7 @@ sleep 3
 B=/sys/class/power_supply/battery
 O=/sys/class/oplus_chg/battery
 AC=/sys/class/power_supply/ac
+C=/sys/class/power_supply/mtk-master-charger
 v=
 rd() { v=; read -r v < "$1" 2>/dev/null; }
 
@@ -33,7 +34,7 @@ lastw=""
 lastlog=0
 while true; do
   cnt=$((cnt+1))
-  if [ $((cnt % 8)) -eq 0 ]; then
+  if [ $((cnt % 20)) -eq 0 ]; then
     [ -f "$MODDIR/config.sh" ] && . "$MODDIR/config.sh"
   fi
   [ "${ENABLE:-1}" = "1" ] || { sleep 2; continue; }
@@ -90,11 +91,14 @@ while true; do
   if [ "$tp" -ge "${TEMP_DERATE:-380}" ]; then OUT=$((T / 2)); fi
   RAW=$((OUT / 100 ))
   [ "$RAW" -lt 1 ] && RAW=1
-  echo "$RAW" > $O/bcc_current 2>/dev/null || { [ "$lastw" != "wf" ] && { log "写 bcc_current 失败"; lastw="wf"; }; }
+  echo "$RAW" > $O/bcc_current 2>/dev/null
+  # 追加硬件级恒流上限, 防止系统抢写瞬间冲高
+  CCMAX=$((T * 1000))
+  [ "$CCMAX" -gt 0 ] && echo "$CCMAX" > $C/constant_charge_current_max 2>/dev/null || { [ "$lastw" != "wf" ] && { log "写 bcc_current 失败"; lastw="wf"; }; }
 
   if [ "$lastw" != "run" ] || [ $((cnt % 10)) -eq 0 ]; then
     log "cap=${cap}% 目标=${OUT}mA 实测=${cn}mA 端压=${vo}mV vbus? temp=$tp"
     lastw="run"
   fi
-  sleep 1.5
+  sleep 0.3
 done
