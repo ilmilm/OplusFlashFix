@@ -5,7 +5,7 @@ ENABLE=1
 MODE=fixed
 
 # fixed / table 模式用
-TARGET_BCC_MA=3000
+TARGET_BCC_MA=1500
 CAP_TIERS="15:4000 30:3800 45:3400 60:3000 75:2200 90:1500 101:900"
 
 # ---- 电压闭环参数 (单位 mV / mA) ----
