@@ -67,6 +67,28 @@
 su -c sh /data/adb/modules/oplus_flash_fix/capctl status
 ```
 
+## 回落自动恢复（v2.2 新增）
+
+100W 头稳定跑一段后会回落（实测约 45% 电量以上），回落即 `voocchg_ing=0`、电流掉到 0.5A。
+v2.2 会检测这个状态并自动强制重新协商，不用手动拔插。
+
+实测三种手段，只有一种有效：
+
+| 手段 | 结果 |
+|---|---|
+| `otg_switch` 翻转 1→0 | 无效，VBUS 不断，不重协商 |
+| `stop_charging_enable` 翻转 | 无效 |
+| **`mmi_charging_enable` 0 → 1** | **有效，4 秒内恢复到 8.85V / 1.33A** |
+
+触发条件（全部满足）：
+
+- `voocchg_ing = 0` 且实测电流 < `RECOVER_CUR`（默认 800mA）
+- 已插上超过 `RECOVER_GRACE_TICKS`（约 10 秒，避免打断正常协商）
+- 电量 < `RECOVER_MAX_PERCENT`（默认 80%，高电量本身跑不动快充）
+- 距上次尝试超过 `RECOVER_COOLDOWN_TICKS`（约 25 秒）
+
+关闭：`RECOVER=0`
+
 ## 配置
 
 `/data/adb/modules/oplus_flash_fix/config.sh`，改完 4 秒内自动热生效（v2.0 起）。

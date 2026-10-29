@@ -1,6 +1,6 @@
 id=oplus_flash_fix
 name=Oplus 快充稳压 (电压闭环)
-version=v2.1
-versionCode=4
+version=v2.2
+versionCode=5
 author=dsh
-description=按目标电流钉住 bcc_current(0.3s 高频写入), 阻止 SUPERVOOC 冲高触发保护回落 5V/0.5A。适用于电池老化内阻升高的 OPPO/一加机型。
+description=钉住 bcc_current 让老化电池走稳定快充档(0.3s 高频写入), 并在回落到 5V/0.5A 时自动用 mmi_charging_enable 强制重协商恢复快充。
