@@ -26,7 +26,7 @@ pick_table() {
   echo $T
 }
 
-log "start v2.0 mode=${MODE} vhigh=${V_HIGH} vlow=${V_LOW} max=${MAX_MA}"
+log "start v2.1 mode=${MODE} vhigh=${V_HIGH} vlow=${V_LOW} max=${MAX_MA}"
 
 T=${START_MA:-1500}
 cnt=0
