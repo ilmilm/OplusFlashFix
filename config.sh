@@ -25,8 +25,8 @@ ADJ_MS=1500
 TEMP_DERATE=380
 TEMP_LIMIT=430
 
-# 充到该百分比停止干预 (0=关闭)
-STOP_AT_PERCENT=0
+# 充到该百分比后停止钉电流(不再干预), 掉回以下自动恢复; 0=不限制
+STOP_AT_PERCENT=80
 
 LOG_ENABLE=1
 
