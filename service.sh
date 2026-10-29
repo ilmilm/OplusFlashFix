@@ -26,7 +26,7 @@ pick_table() {
   echo $T
 }
 
-log "start v2.2 mode=${MODE} target=${TARGET_BCC_MA} recover=${RECOVER}"
+log "start v2.3 mode=${MODE} target=${TARGET_BCC_MA} recover=${RECOVER}"
 
 T=${TARGET_BCC_MA:-1500}
 cnt=0
